@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:match_day/bloc/create_match_day/bloc.dart';
 import 'package:match_day/bloc/edit_match_day/bloc.dart';
 import 'package:match_day/model/match_day.dart';
@@ -51,7 +52,7 @@ class _CreateMatchDayPageState extends State<CreateMatchDayPage> {
                         return Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: MdTextField(
-                            label: 'Match Day Name',
+                            label: AppLocalizations.of(context).matchDayName,
                             text: '${state.original?.name}',
                             onChanged: (text) {
                               BlocProvider.of<EditMatchDayBloc>(context).add(EditName(text));

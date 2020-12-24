@@ -23,6 +23,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.16.1
   cupertino_icons: ^1.0.0
   rxdart: ^0.18.0
   flutter_bloc: ^6.0.5
@@ -74,3 +77,5 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+  generate: true
