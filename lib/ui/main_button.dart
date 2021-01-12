@@ -9,7 +9,7 @@ class MainButton extends StatelessWidget {
   const MainButton({
     Key key,
     this.onPressed,
-    this.loading,
+    this.loading = false,
     this.label,
   }) : super(key: key);
 
@@ -23,17 +23,17 @@ class MainButton extends StatelessWidget {
 
   Widget _buildChild(BuildContext context) {
     if (this.loading) {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: FractionallySizedBox(
-        heightFactor: 0.7,
-        widthFactor: 0.7,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).canvasColor),
+      return AspectRatio(
+        aspectRatio: 1,
+        child: FractionallySizedBox(
+          heightFactor: 0.7,
+          widthFactor: 0.7,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).canvasColor),
+          ),
         ),
-      ),
-    );
+      );
     } else {
       return Text(label);
     }

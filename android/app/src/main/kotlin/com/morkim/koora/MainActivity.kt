@@ -1,4 +1,4 @@
-package com.morkim.match_day
+package com.morkim.koora
 
 import io.flutter.embedding.android.FlutterActivity
 

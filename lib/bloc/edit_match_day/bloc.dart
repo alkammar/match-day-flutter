@@ -16,10 +16,8 @@ class EditMatchDayBloc extends Bloc<EditMatchDayEvent, EditMatchDayState> {
   EditMatchDayBloc({
     @required MatchDay matchDay,
     @required MatchDayRepository matchDayRepository,
-  })
-      : _matchDayRepository = matchDayRepository,
+  })  : _matchDayRepository = matchDayRepository,
         super(const EditMatchDayState.unknown()) {
-
     if (matchDay != null) {
       add(LoadMatchDay(matchDay));
     }
@@ -38,13 +36,15 @@ class EditMatchDayBloc extends Bloc<EditMatchDayEvent, EditMatchDayState> {
 
   Stream<EditMatchDayState> _initializeMatchDay(LoadMatchDay event) async* {
     _matchDay = event.matchDay;
-    _editedMatchDay = _matchDay.clone();
+    _editedMatchDay = _matchDay.copyWith();
 
     yield EditMatchDayState.initialized(_matchDay);
   }
 
   Stream<EditMatchDayState> _editName(EditName event) async* {
-    _editedMatchDay.name = event.name;
+    _editedMatchDay = _editedMatchDay.copyWith(
+      name: event.name,
+    );
     if (_matchDay != _editedMatchDay) {
       yield EditMatchDayState.edited(_matchDay, _editedMatchDay);
     } else {

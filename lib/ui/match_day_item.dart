@@ -1,7 +1,8 @@
 import 'package:flutter/widgets.dart';
+import 'package:match_day/model/match_day.dart';
 
 class MatchDayItemWidget extends StatelessWidget {
-  final matchDay;
+  final MatchDay matchDay;
 
   const MatchDayItemWidget({
     Key key,
@@ -10,15 +11,19 @@ class MatchDayItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      child: Text('${matchDay?.name}'),
-      onTap: () {
-        Navigator.pushNamed(
-          context,
-          '/details',
-          arguments: matchDay,
-        );
-      },
-    );
+    if (!matchDay.invitation) {
+      return GestureDetector(
+        child: Text('${matchDay?.name}'),
+        onTap: () {
+          Navigator.pushNamed(
+            context,
+            '/details',
+            arguments: matchDay,
+          );
+        },
+      );
+    } else {
+      return Text('${matchDay?.name}');
+    }
   }
 }

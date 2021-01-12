@@ -4,20 +4,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:match_day/bloc/create_match_day/bloc.dart';
 import 'package:match_day/bloc/edit_match_day/bloc.dart';
+import 'package:match_day/bloc/invite_players/bloc.dart';
 import 'package:match_day/model/match_day.dart';
 import 'package:match_day/ui/main_button.dart';
 import 'package:match_day/ui/md_text_field.dart';
 
-class CreateMatchDayPage extends StatefulWidget {
+class CreateMatchDayScreen extends StatefulWidget {
   final MatchDay matchDay;
 
   @override
-  _CreateMatchDayPageState createState() => _CreateMatchDayPageState();
+  _CreateMatchDayScreenState createState() => _CreateMatchDayScreenState();
 
-  CreateMatchDayPage({this.matchDay});
+  CreateMatchDayScreen({this.matchDay});
 }
 
-class _CreateMatchDayPageState extends State<CreateMatchDayPage> {
+class _CreateMatchDayScreenState extends State<CreateMatchDayScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -84,7 +85,7 @@ class _CreateMatchDayPageState extends State<CreateMatchDayPage> {
                     width: double.infinity,
                     child: MainButton(
                       loading: false,
-                      // onPressed: () => BlocProvider.of<EditMatchDayBloc>(context).add(),
+                      onPressed: () => BlocProvider.of<InvitePlayersBloc>(context).add(SendInvitation(null)),
                       label: 'Add Player',
                     ),
                   ),

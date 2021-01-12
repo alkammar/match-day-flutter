@@ -10,19 +10,20 @@ class MatchDayRepository {
   List<MatchDay> list = [];
 
   Future<List<MatchDay>> fetchMatchDays() async {
-
     if (list.isEmpty) {
       User admin = User();
       admin.name = 'HDMI';
 
-      var matchDay1 = MatchDay();
-      matchDay1.name = 'First match';
-      matchDay1.admin = admin;
+      var matchDay1 = MatchDay(
+        name: 'First match',
+        admin: admin,
+      );
       list.add(matchDay1);
 
-      var matchDay2 = MatchDay();
-      matchDay2.name = 'Second match';
-      matchDay2.admin = admin;
+      var matchDay2 = MatchDay(
+        name: 'Second match',
+        admin: admin,
+      );
       list.add(matchDay2);
     }
 
@@ -39,13 +40,13 @@ class MatchDayRepository {
   }
 
   Future<MatchDay> createMatchDay() async {
-    var matchDay = MatchDay();
-    matchDay.name = 'Anonymous match';
-
     var admin = User();
     admin.name = 'Me';
 
-    matchDay.admin = admin;
+    var matchDay = MatchDay(
+      name: 'Anonymous match',
+      admin: admin,
+    );
 
     return Future.delayed(Duration(seconds: 1), () => matchDay);
   }
@@ -55,21 +56,21 @@ class MatchDayRepository {
     admin.name = 'Me';
 
     return Future.delayed(Duration(seconds: 2), () {
-      matchDay.admin = admin;
-      return matchDay;
+      return matchDay.copyWith(admin: admin);
     });
   }
 
   Future<String> updateName(MatchDay matchDay, String name) {
-    matchDay.name = name;
+    // matchDay.name = name;
     return Future.delayed(Duration(seconds: 0), () => name);
   }
 
   Future<MatchDay> update(MatchDay matchDay, MatchDay editedMatchDay) {
     return Future.delayed(Duration(seconds: 3), () {
-
-      matchDay.name = editedMatchDay.name;
-      matchDay.admin = editedMatchDay.admin;
+      matchDay.copyWith(
+        name: editedMatchDay.name,
+        admin: editedMatchDay.admin,
+      );
 
       if (!list.contains(matchDay)) {
         list.add(matchDay);
