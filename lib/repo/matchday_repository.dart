@@ -1,54 +1,58 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:match_day/model/admin.dart';
 import 'package:match_day/model/match_day.dart';
 
 class MatchDayRepository {
-  // final moviesApiProvider = MovieApiProvider();
-
-  // Future<Matchday> fetchAllMovies() => moviesApiProvider.fetchMovieList();
   List<MatchDay> list = [];
 
-  Future<List<MatchDay>> fetchMatchDays() async {
-    if (list.isEmpty) {
-      User admin = User();
-      admin.name = 'HDMI';
+  Stream<List<MatchDay>> _onlineStream = FirebaseFirestore.instance
+      .collection('match_days')
+      .snapshots()
+      .map<List<MatchDay>>(
+    (event) {
+      List<MatchDay> list = [];
+      event.docs.forEach((element) {
+        print('event from firestore ${element.data()['name']}');
 
-      var matchDay1 = MatchDay(
-        name: 'First match',
-        admin: admin,
-      );
-      list.add(matchDay1);
+        User admin = User();
+        admin.name = 'HDMI';
 
-      var matchDay2 = MatchDay(
-        name: 'Second match',
-        admin: admin,
-      );
-      list.add(matchDay2);
-    }
+        var matchDay = MatchDay(
+          id: element.id,
+          name: element.data()['name'],
+          admin: admin,
+        );
+        list.add(matchDay);
+      });
+      return list;
+    },
+  );
 
-    return Future.delayed(Duration(seconds: 1), () => list);
-    // return Future.error('my error');
+  Stream<List<MatchDay>> get stream {
+    return _onlineStream;
   }
 
-  StreamController<MatchDay> controller = StreamController<MatchDay>();
-
-  StreamSubscription<MatchDay> listenToUpdates(Function f) {
-    return controller.stream.listen((value) {
-      f.call(value);
-    });
+  Future<List<MatchDay>> fetchMatchDays() async {
+    return _onlineStream.first;
   }
 
   Future<MatchDay> createMatchDay() async {
-    var admin = User();
-    admin.name = 'Me';
+    return FirebaseFirestore.instance
+        .collection('match_days')
+        .add({}).then((value) {
+      return value.get().then((snapshot) {
+        var admin = User();
+        admin.name = 'Me';
 
-    var matchDay = MatchDay(
-      name: 'Anonymous match',
-      admin: admin,
-    );
-
-    return Future.delayed(Duration(seconds: 1), () => matchDay);
+        return MatchDay(
+          id: snapshot.id,
+          name: snapshot.data()['name'] ?? '',
+          admin: admin,
+        );
+      });
+    });
   }
 
   Future<MatchDay> assignAdmin(MatchDay matchDay) {
@@ -60,23 +64,13 @@ class MatchDayRepository {
     });
   }
 
-  Future<String> updateName(MatchDay matchDay, String name) {
-    // matchDay.name = name;
-    return Future.delayed(Duration(seconds: 0), () => name);
-  }
-
-  Future<MatchDay> update(MatchDay matchDay, MatchDay editedMatchDay) {
-    return Future.delayed(Duration(seconds: 3), () {
-      matchDay.copyWith(
-        name: editedMatchDay.name,
-        admin: editedMatchDay.admin,
-      );
-
-      if (!list.contains(matchDay)) {
-        list.add(matchDay);
-      }
-      controller.add(matchDay);
-      return matchDay;
-    });
+  Future<void> update(MatchDay matchDay) {
+    print('updated match day ${matchDay.id}');
+    return FirebaseFirestore.instance
+        .collection('match_days')
+        .doc(matchDay.id)
+        .update(
+      {'name': matchDay.name},
+    ).then((value) => null);
   }
 }

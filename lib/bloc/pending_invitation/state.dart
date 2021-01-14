@@ -13,7 +13,7 @@ class PendingInvitationState extends Equatable {
 
   PendingInvitationState copyWith({
     PendingInvitationStatus status,
-    MatchDay invitation,
+    Invitation invitation,
     String error,
   }) {
     return PendingInvitationState(
@@ -27,4 +27,12 @@ class PendingInvitationState extends Equatable {
   List<Object> get props => [status, invitation, error];
 }
 
-enum PendingInvitationStatus { uninitialized, initialized, accepting, declining, accepted, declined, error }
+enum PendingInvitationStatus {
+  uninitialized,
+  initialized,
+  accepting,
+  declining,
+  accepted,
+  declined,
+  error
+}

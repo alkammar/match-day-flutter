@@ -7,10 +7,10 @@ abstract class PendingInvitationEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class InitInvitation extends PendingInvitationEvent {
-  final MatchDay invitation;
+class Init extends PendingInvitationEvent {
+  final Invitation invitation;
 
-  InitInvitation(this.invitation);
+  Init(this.invitation);
 
   @override
   List<Object> get props => [invitation];

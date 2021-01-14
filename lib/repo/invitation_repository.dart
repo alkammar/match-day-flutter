@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:match_day/model/invitation.dart';
 import 'package:match_day/model/match_day.dart';
 
@@ -17,15 +18,29 @@ class InvitationRepository {
     return Future.delayed(Duration(seconds: 1), () => list);
   }
 
-  Future<Invitation> addMatchDay(Invitation invitation) {
-    return Future.delayed(Duration(seconds: 2), () {
-      invitation = invitation.copyWith();
-      if (!list.contains(invitation)) {
-        list.add(invitation);
-      }
-      controller.add(invitation);
+  Future<String> createInvitation(MatchDay matchDay) {
+    return FirebaseFirestore.instance
+        .collection('match_days')
+        .doc(matchDay.id)
+        .collection('invitations')
+        .add({}).then((doc) {
+      return doc.id;
+    });
+  }
 
-      return invitation;
+  Future<Invitation> addJoinRequest(Invitation invitation) {
+    return FirebaseFirestore.instance
+        .collection('match_days')
+        .doc(invitation.matchDay.id)
+        .collection('invitations')
+        .doc(invitation.id)
+        .collection('join_requests')
+        .add({
+      // TODO add user id
+    }).then((value) {
+      return value.get().then((snapshot) {
+        return invitation;
+      });
     });
   }
 

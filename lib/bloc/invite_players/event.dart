@@ -10,10 +10,10 @@ abstract class InvitePlayersEvent extends Equatable {
 class FetchContacts extends InvitePlayersEvent {}
 
 class SendInvitation extends InvitePlayersEvent {
-  final String number;
+  final MatchDay matchDay;
 
-  SendInvitation(this.number);
+  SendInvitation(this.matchDay);
 
   @override
-  List<Object> get props => [number];
+  List<Object> get props => [matchDay];
 }

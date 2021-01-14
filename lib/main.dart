@@ -7,12 +7,15 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:match_day/bloc/create_match_day/bloc.dart';
 import 'package:match_day/bloc/dynamic_link/bloc.dart';
 import 'package:match_day/bloc/edit_match_day/bloc.dart';
+import 'package:match_day/bloc/edit_profile/bloc.dart';
 import 'package:match_day/bloc/fetch_match_days/bloc.dart';
 import 'package:match_day/bloc/invite_players/bloc.dart';
 import 'package:match_day/bloc/pending_invitation/bloc.dart';
 import 'package:match_day/repo/invitation_repository.dart';
 import 'package:match_day/repo/matchday_repository.dart';
+import 'package:match_day/repo/profile_repository.dart';
 import 'package:match_day/ui/create_match_day_screen.dart';
+import 'package:match_day/ui/edit_profile_screen.dart';
 import 'package:match_day/ui/home_screen.dart';
 import 'package:match_day/ui/invitation_screen.dart';
 
@@ -27,24 +30,36 @@ class MatchDayApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _initialization,
-      builder: (context, snapshot) {
-        return MultiRepositoryProvider(
-          providers: [
-            RepositoryProvider<MatchDayRepository>(create: (context) => MatchDayRepository()),
-            RepositoryProvider<InvitationRepository>(create: (context) => InvitationRepository()),
-          ],
-          child: MultiBlocProvider(
-            providers: [
-              BlocProvider<DynamicLinkBloc>(create: (context) {
-                return DynamicLinkBloc();
-              }),
-            ],
-            child: MatchDayView(),
-          ),
-        );
-      },
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<ProfileRepository>(
+            create: (context) => ProfileRepository()),
+        RepositoryProvider<MatchDayRepository>(
+            create: (context) => MatchDayRepository()),
+        RepositoryProvider<InvitationRepository>(
+            create: (context) => InvitationRepository()),
+      ],
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<DynamicLinkBloc>(create: (context) {
+            return DynamicLinkBloc();
+          }),
+        ],
+        child: FutureBuilder(
+          future: _initialization,
+          builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+            if (snapshot.hasError) {
+              return Text(snapshot.error.toString());
+            } else if (snapshot.hasData) {
+              return MatchDayView();
+            } else {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
+        ),
+      ),
     );
   }
 }
@@ -83,8 +98,10 @@ class _MatchDayViewState extends State<MatchDayView> {
         providers: [
           BlocProvider<FetchMatchDaysBloc>(create: (context) {
             return FetchMatchDaysBloc(
-              matchDayRepository: RepositoryProvider.of<MatchDayRepository>(context),
-              invitationRepository: RepositoryProvider.of<InvitationRepository>(context),
+              matchDayRepository:
+                  RepositoryProvider.of<MatchDayRepository>(context),
+              invitationRepository:
+                  RepositoryProvider.of<InvitationRepository>(context),
             );
           }),
         ],
@@ -111,16 +128,26 @@ class _MatchDayViewState extends State<MatchDayView> {
           return MaterialPageRoute(builder: (context) {
             return MultiBlocProvider(
               providers: [
-                BlocProvider<InvitePlayersBloc>(create: (context) => InvitePlayersBloc()),
+                BlocProvider<InvitePlayersBloc>(
+                    create: (context) => InvitePlayersBloc(
+                          invitationRepository:
+                              RepositoryProvider.of<InvitationRepository>(
+                                  context),
+                        )),
                 BlocProvider<EditMatchDayBloc>(
                     create: (context) => EditMatchDayBloc(
                           matchDay: settings.arguments,
-                          matchDayRepository: RepositoryProvider.of<MatchDayRepository>(context),
+                          matchDayRepository:
+                              RepositoryProvider.of<MatchDayRepository>(
+                                  context),
                         )),
                 BlocProvider<CreateMatchDayBloc>(
                     create: (context) => CreateMatchDayBloc(
-                          matchDayRepository: RepositoryProvider.of<MatchDayRepository>(context),
-                          editMatchDayBloc: BlocProvider.of<EditMatchDayBloc>(context),
+                          matchDayRepository:
+                              RepositoryProvider.of<MatchDayRepository>(
+                                  context),
+                          editMatchDayBloc:
+                              BlocProvider.of<EditMatchDayBloc>(context),
                         )),
               ],
               child: CreateMatchDayScreen(),
@@ -130,11 +157,18 @@ class _MatchDayViewState extends State<MatchDayView> {
           return MaterialPageRoute(builder: (context) {
             return MultiBlocProvider(
               providers: [
-                BlocProvider<InvitePlayersBloc>(create: (context) => InvitePlayersBloc()),
+                BlocProvider<InvitePlayersBloc>(
+                    create: (context) => InvitePlayersBloc(
+                          invitationRepository:
+                              RepositoryProvider.of<InvitationRepository>(
+                                  context),
+                        )),
                 BlocProvider<EditMatchDayBloc>(
                     create: (context) => EditMatchDayBloc(
                           matchDay: settings.arguments,
-                          matchDayRepository: RepositoryProvider.of<MatchDayRepository>(context),
+                          matchDayRepository:
+                              RepositoryProvider.of<MatchDayRepository>(
+                                  context),
                         )),
               ],
               child: CreateMatchDayScreen(matchDay: settings.arguments),
@@ -147,10 +181,25 @@ class _MatchDayViewState extends State<MatchDayView> {
                 BlocProvider<PendingInvitationBloc>(
                     create: (context) => PendingInvitationBloc(
                           uri: settings.arguments,
-                          invitationRepository: RepositoryProvider.of<InvitationRepository>(context),
+                          invitationRepository:
+                              RepositoryProvider.of<InvitationRepository>(
+                                  context),
                         )),
               ],
               child: InvitationScreen(),
+            );
+          });
+        } else if (settings.name == '/edit-profile') {
+          return MaterialPageRoute(builder: (context) {
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider<EditProfileBloc>(
+                    create: (context) => EditProfileBloc(
+                          profileRepository:
+                              RepositoryProvider.of<ProfileRepository>(context),
+                        )),
+              ],
+              child: EditProfileScreen(),
             );
           });
         } else {

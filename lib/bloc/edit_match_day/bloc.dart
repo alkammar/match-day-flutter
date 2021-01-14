@@ -54,7 +54,7 @@ class EditMatchDayBloc extends Bloc<EditMatchDayEvent, EditMatchDayState> {
 
   Stream<EditMatchDayState> _updateMatchDay() async* {
     yield EditMatchDayState.submitting();
-    await _matchDayRepository.update(_matchDay, _editedMatchDay);
+    await _matchDayRepository.update(_editedMatchDay);
     yield EditMatchDayState.submitted();
   }
 }

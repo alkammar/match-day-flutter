@@ -8,7 +8,8 @@ import 'package:match_day/repo/invitation_repository.dart';
 part 'event.dart';
 part 'state.dart';
 
-class PendingInvitationBloc extends Bloc<PendingInvitationEvent, PendingInvitationState> {
+class PendingInvitationBloc
+    extends Bloc<PendingInvitationEvent, PendingInvitationState> {
   Uri _uri;
   final InvitationRepository _invitationRepository;
 
@@ -18,31 +19,41 @@ class PendingInvitationBloc extends Bloc<PendingInvitationEvent, PendingInvitati
   })  : _uri = uri,
         _invitationRepository = invitationRepository,
         super(const PendingInvitationState()) {
-    add(InitInvitation(
+    add(Init(
       Invitation(
-        id: _uri.path,
-        name: 'well you know',
+        id: _uri.queryParameters['iid'],
+        matchDay:
+            MatchDay(id: _uri.queryParameters['mdid'], name: 'well you know'),
       ),
     ));
   }
 
   @override
-  Stream<PendingInvitationState> mapEventToState(PendingInvitationEvent event) async* {
-    if (event is InitInvitation) {
+  Stream<PendingInvitationState> mapEventToState(
+      PendingInvitationEvent event) async* {
+    if (event is Init) {
       yield* _initInvitation(event);
     } else if (event is AskToJoinMatchDay) {
       yield* _askToJoin(event);
     }
   }
 
-  Stream<PendingInvitationState> _initInvitation(InitInvitation event) async* {
-    yield state.copyWith(status: PendingInvitationStatus.initialized, invitation: event.invitation);
+  Stream<PendingInvitationState> _initInvitation(Init event) async* {
+    yield state.copyWith(
+      status: PendingInvitationStatus.initialized,
+      invitation: event.invitation,
+    );
+    // final GoogleSignInAccount googleUser = await GoogleSignIn().signIn();
   }
 
   Stream<PendingInvitationState> _askToJoin(AskToJoinMatchDay event) async* {
     yield state.copyWith(status: PendingInvitationStatus.accepting);
 
-    Invitation invitation = await _invitationRepository.addMatchDay(state.invitation);
+    print('accepting invitation to ${state.invitation}');
+
+    Invitation invitation = await _invitationRepository.addJoinRequest(
+      state.invitation,
+    );
 
     yield state.copyWith(status: PendingInvitationStatus.accepted);
   }

@@ -26,7 +26,8 @@ class _CreateMatchDayScreenState extends State<CreateMatchDayScreen> {
     if (widget.matchDay == null) {
       BlocProvider.of<CreateMatchDayBloc>(context).add(CreateMatchDay());
     } else {
-      BlocProvider.of<EditMatchDayBloc>(context).add(LoadMatchDay(widget.matchDay));
+      BlocProvider.of<EditMatchDayBloc>(context)
+          .add(LoadMatchDay(widget.matchDay));
     }
   }
 
@@ -34,7 +35,8 @@ class _CreateMatchDayScreenState extends State<CreateMatchDayScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.matchDay == null ? 'Create Match Day' : 'Edit Match Day'),
+        title: Text(
+            widget.matchDay == null ? 'Create Match Day' : 'Edit Match Day'),
       ),
       body: SafeArea(
         child: BlocListener<EditMatchDayBloc, EditMatchDayState>(
@@ -48,27 +50,31 @@ class _CreateMatchDayScreenState extends State<CreateMatchDayScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   BlocBuilder<EditMatchDayBloc, EditMatchDayState>(
-                      buildWhen: (previous, current) => previous.status == EditStatus.uninitialized,
+                      buildWhen: (previous, current) =>
+                          previous.status == EditStatus.uninitialized,
                       builder: (context, state) {
                         return Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: MdTextField(
                             label: AppLocalizations.of(context).matchDayName,
-                            text: '${state.original?.name}',
+                            text: '${state.original?.name ?? ''}',
                             onChanged: (text) {
-                              BlocProvider.of<EditMatchDayBloc>(context).add(EditName(text));
+                              BlocProvider.of<EditMatchDayBloc>(context)
+                                  .add(EditName(text));
                             },
                           ),
                         );
                       }),
-                  BlocBuilder<EditMatchDayBloc, EditMatchDayState>(builder: (context, state) {
+                  BlocBuilder<EditMatchDayBloc, EditMatchDayState>(
+                      builder: (context, state) {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text('${state.original?.admin?.name}'),
                     );
                   }),
                   BlocBuilder<EditMatchDayBloc, EditMatchDayState>(
-                      buildWhen: (previous, current) => previous.status == EditStatus.uninitialized,
+                      buildWhen: (previous, current) =>
+                          previous.status == EditStatus.uninitialized,
                       builder: (context, state) {
                         return Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -76,18 +82,25 @@ class _CreateMatchDayScreenState extends State<CreateMatchDayScreen> {
                             label: 'Match Day Location',
                             text: '${state.original?.location}',
                             onChanged: (text) {
-                              BlocProvider.of<EditMatchDayBloc>(context).add(EditLocation(text));
+                              BlocProvider.of<EditMatchDayBloc>(context)
+                                  .add(EditLocation(text));
                             },
                           ),
                         );
                       }),
-                  SizedBox(
-                    width: double.infinity,
-                    child: MainButton(
-                      loading: false,
-                      onPressed: () => BlocProvider.of<InvitePlayersBloc>(context).add(SendInvitation(null)),
-                      label: 'Add Player',
-                    ),
+                  BlocBuilder<EditMatchDayBloc, EditMatchDayState>(
+                    builder: (BuildContext context, state) {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: MainButton(
+                          loading: false,
+                          onPressed: () =>
+                              BlocProvider.of<InvitePlayersBloc>(context)
+                                  .add(SendInvitation(state.original)),
+                          label: 'Add Player',
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -100,7 +113,8 @@ class _CreateMatchDayScreenState extends State<CreateMatchDayScreen> {
                       width: double.infinity,
                       child: MainButton(
                         onPressed: state.status == EditStatus.edited
-                            ? () => BlocProvider.of<EditMatchDayBloc>(context).add(SubmitEdits())
+                            ? () => BlocProvider.of<EditMatchDayBloc>(context)
+                                .add(SubmitEdits())
                             : null,
                         loading: state.status == EditStatus.submitting,
                         label: 'Submit',

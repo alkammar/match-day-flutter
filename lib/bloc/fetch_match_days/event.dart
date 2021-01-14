@@ -7,4 +7,10 @@ abstract class MatchDaysEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class FetchMatchDays extends MatchDaysEvent {}
+class MatchDaysRequested extends MatchDaysEvent {}
+
+class MatchDaysUpdated extends MatchDaysEvent {
+  final matchDays;
+
+  MatchDaysUpdated(this.matchDays);
+}

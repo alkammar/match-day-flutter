@@ -14,7 +14,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    BlocProvider.of<FetchMatchDaysBloc>(context).add(FetchMatchDays());
+    BlocProvider.of<FetchMatchDaysBloc>(context).add(MatchDaysRequested());
   }
 
   @override
@@ -25,14 +25,15 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () {
-          return Future(() => BlocProvider.of<FetchMatchDaysBloc>(context).add(FetchMatchDays()));
+          return Future(() => BlocProvider.of<FetchMatchDaysBloc>(context)
+              .add(MatchDaysRequested()));
         },
         child: BlocBuilder<FetchMatchDaysBloc, MatchDaysState>(
           builder: (context, state) {
             debugPrint('state ${state.toString()}');
             if (state.error.isNotEmpty) {
               return Center(child: Text(state.error));
-            } else if (state.started) {
+            } else if (state.status == MatchDaysStatus.fetching) {
               return Center(child: CircularProgressIndicator());
             } else if (state.matchDays == null) {
               return Center(child: Text("Start by creating a Match day!"));
@@ -40,8 +41,10 @@ class _HomeScreenState extends State<HomeScreen> {
               return ListView.builder(
                 itemCount: state.matchDays.length,
                 itemBuilder: (context, index) {
+                  var item = state.matchDays[index];
                   return ListTile(
-                    title: MatchDayItemWidget(matchDay: state.matchDays[index]),
+                    key: Key(item.id),
+                    title: MatchDayItemWidget(matchDay: item),
                   );
                 },
               );

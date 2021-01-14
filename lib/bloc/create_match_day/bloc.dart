@@ -8,7 +8,8 @@ import 'package:match_day/repo/matchday_repository.dart';
 part 'event.dart';
 part 'state.dart';
 
-class CreateMatchDayBloc extends Bloc<CreateMatchDayEvent, CreateMatchDayState> {
+class CreateMatchDayBloc
+    extends Bloc<CreateMatchDayEvent, CreateMatchDayState> {
   final MatchDayRepository _matchDaysRepository;
   EditMatchDayBloc _editMatchDayBloc;
 
@@ -20,10 +21,12 @@ class CreateMatchDayBloc extends Bloc<CreateMatchDayEvent, CreateMatchDayState> 
         super(const CreateMatchDayState.unknown());
 
   @override
-  Stream<CreateMatchDayState> mapEventToState(CreateMatchDayEvent event) async* {
+  Stream<CreateMatchDayState> mapEventToState(
+      CreateMatchDayEvent event) async* {
     if (event is CreateMatchDay) {
       yield CreateMatchDayState.started();
       MatchDay matchDay = await _matchDaysRepository.createMatchDay();
+      print('created match day $matchDay');
 
       yield CreateMatchDayState.created(matchDay);
 

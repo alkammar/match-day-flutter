@@ -19,7 +19,8 @@ class _InvitationScreenState extends State<InvitationScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () {
-          return Future(() => BlocProvider.of<FetchMatchDaysBloc>(context).add(FetchMatchDays()));
+          return Future(() => BlocProvider.of<FetchMatchDaysBloc>(context)
+              .add(MatchDaysRequested()));
         },
         child: BlocBuilder<PendingInvitationBloc, PendingInvitationState>(
           builder: (context, state) {
@@ -35,11 +36,13 @@ class _InvitationScreenState extends State<InvitationScreen> {
               return Center(
                 child: Column(
                   children: [
-                    Text('You have been invited to ${state.invitation?.name}'),
+                    Text(
+                        'You have been invited to ${state.invitation?.matchDay?.name ?? 'unknown'}'),
                     MainButton(
                       label: 'Join',
                       onPressed: () {
-                        BlocProvider.of<PendingInvitationBloc>(context).add(AskToJoinMatchDay());
+                        BlocProvider.of<PendingInvitationBloc>(context)
+                            .add(AskToJoinMatchDay());
                       },
                     )
                   ],

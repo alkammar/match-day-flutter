@@ -8,7 +8,13 @@ class MatchDay extends Equatable {
   final String location;
   final bool invitation;
 
-  MatchDay({this.id, this.name, this.admin, this.location, this.invitation = false});
+  MatchDay({
+    this.id,
+    this.name,
+    this.admin,
+    this.location,
+    this.invitation = false,
+  });
 
   @override
   List<Object> get props => [id, name, admin, location, invitation];

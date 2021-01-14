@@ -13,7 +13,7 @@ part 'state.dart';
 class FetchMatchDaysBloc extends Bloc<MatchDaysEvent, MatchDaysState> {
   final MatchDayRepository _matchDaysRepository;
   final InvitationRepository _invitationRepository;
-  StreamSubscription<MatchDay> _matchDaysStream;
+  StreamSubscription<List<MatchDay>> _matchDaysStream;
   StreamSubscription<MatchDay> _invitationsStream;
 
   FetchMatchDaysBloc({
@@ -22,28 +22,43 @@ class FetchMatchDaysBloc extends Bloc<MatchDaysEvent, MatchDaysState> {
   })  : assert(matchDayRepository != null),
         _matchDaysRepository = matchDayRepository,
         _invitationRepository = invitationRepository,
-        super(const MatchDaysState.unknown()) {
-    _matchDaysStream = _matchDaysRepository.listenToUpdates((MatchDay matchDay) {
-      return {add(FetchMatchDays())};
-    });
-    _invitationsStream = _invitationRepository.listenToUpdates((MatchDay matchDay) {
-      return {add(FetchMatchDays())};
+        super(const MatchDaysState()) {
+    _matchDaysStream = _matchDaysRepository.stream.listen((event) => add(
+          MatchDaysUpdated(event),
+        ));
+    _invitationsStream =
+        _invitationRepository.listenToUpdates((MatchDay matchDay) {
+      return {add(MatchDaysRequested())};
     });
   }
 
   @override
   Stream<MatchDaysState> mapEventToState(MatchDaysEvent event) async* {
-    if (event is FetchMatchDays) {
-      yield MatchDaysState.started();
+    if (event is MatchDaysRequested) {
+      yield* _fetchMatchDays(event);
+    } else if (event is MatchDaysUpdated) {
+      yield state.copyWith(matchDays: event.matchDays);
+    }
+  }
 
-      try {
-        List<MatchDay> matchDays = await _matchDaysRepository.fetchMatchDays();
-        yield MatchDaysState.fetched(matchDays);
-        List<MatchDay> invitations = await _invitationRepository.fetchMatchDays();
-        yield MatchDaysState.fetched(matchDays + invitations);
-      } catch (e) {
-        yield MatchDaysState.error('Something wrong happened $e');
-      }
+  Stream<MatchDaysState> _fetchMatchDays(MatchDaysRequested event) async* {
+    yield state.copyWith(status: MatchDaysStatus.fetching);
+
+    try {
+      List<MatchDay> matchDays = await _matchDaysRepository.fetchMatchDays();
+      yield state.copyWith(
+        status: MatchDaysStatus.complete,
+        matchDays: matchDays,
+      );
+
+      print('match day stream $_matchDaysStream');
+      List<MatchDay> invitations = await _invitationRepository.fetchMatchDays();
+      // yield MatchDaysState.fetched(matchDays + invitations);
+    } catch (e) {
+      yield state.copyWith(
+        status: MatchDaysStatus.error,
+        error: 'Something wrong happened $e',
+      );
     }
   }
 

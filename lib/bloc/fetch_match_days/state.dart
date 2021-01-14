@@ -1,24 +1,30 @@
 part of 'bloc.dart';
 
 class MatchDaysState extends Equatable {
-  const MatchDaysState._({
+  const MatchDaysState({
+    this.status = MatchDaysStatus.uninitialized,
     this.matchDays,
     this.error = '',
-    this.started = false,
   });
 
-  const MatchDaysState.unknown() : this._();
+  MatchDaysState copyWith({
+    MatchDaysStatus status,
+    List<MatchDay> matchDays,
+    String error,
+  }) {
+    return MatchDaysState(
+      status: status ?? this.status,
+      matchDays: matchDays ?? this.matchDays,
+      error: error ?? this.error,
+    );
+  }
 
-  const MatchDaysState.started() : this._(started: true);
-
-  const MatchDaysState.fetched(List<MatchDay> matchDays) : this._(matchDays: matchDays);
-
-  const MatchDaysState.error(String error) : this._(error: error);
-
+  final MatchDaysStatus status;
   final List<MatchDay> matchDays;
   final String error;
-  final bool started;
 
   @override
-  List<Object> get props => [matchDays, error, started];
+  List<Object> get props => [matchDays, error, status];
 }
+
+enum MatchDaysStatus { uninitialized, fetching, complete, error }
