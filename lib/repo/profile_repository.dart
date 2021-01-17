@@ -1,21 +1,24 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:match_day/model/profile.dart';
 
 class ProfileRepository {
   Profile profile;
 
+  Stream<Profile> get stream => Stream.fromFuture(fetchProfile());
+
   Future<Profile> fetchProfile() async {
-    return Future.delayed(Duration(seconds: 1), () => profile);
-    // return Future.error('my error');
-  }
-
-  StreamController<Profile> controller = StreamController<Profile>();
-
-  StreamSubscription<Profile> listenToUpdates(Function f) {
-    return controller.stream.listen((value) {
-      f.call(value);
-    });
+    return FirebaseFirestore.instance
+        .collection('profiles')
+        .doc(FirebaseAuth.instance.currentUser.uid)
+        .get()
+        .then((doc) => Profile(
+              id: doc.id,
+              name: FirebaseAuth.instance.currentUser.displayName,
+              nickName: doc.data()['name'],
+            ));
   }
 
   Future<Profile> createProfile() async {
@@ -31,7 +34,6 @@ class ProfileRepository {
             nickName: profile.nickName,
           );
 
-      controller.add(profile);
       return profile;
     });
   }

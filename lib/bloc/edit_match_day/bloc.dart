@@ -8,20 +8,16 @@ part 'event.dart';
 part 'state.dart';
 
 class EditMatchDayBloc extends Bloc<EditMatchDayEvent, EditMatchDayState> {
-  MatchDay _matchDay;
+  // MatchDay _matchDay;
   final MatchDayRepository _matchDayRepository;
 
-  MatchDay _editedMatchDay;
+  // MatchDay _editedMatchDay;
 
   EditMatchDayBloc({
     @required MatchDay matchDay,
     @required MatchDayRepository matchDayRepository,
   })  : _matchDayRepository = matchDayRepository,
-        super(const EditMatchDayState.unknown()) {
-    if (matchDay != null) {
-      add(LoadMatchDay(matchDay));
-    }
-  }
+        super(EditMatchDayState(original: matchDay));
 
   @override
   Stream<EditMatchDayState> mapEventToState(EditMatchDayEvent event) async* {
@@ -35,26 +31,27 @@ class EditMatchDayBloc extends Bloc<EditMatchDayEvent, EditMatchDayState> {
   }
 
   Stream<EditMatchDayState> _initializeMatchDay(LoadMatchDay event) async* {
-    _matchDay = event.matchDay;
-    _editedMatchDay = _matchDay.copyWith();
-
-    yield EditMatchDayState.initialized(_matchDay);
+    yield state.copyWith(
+        status: EditStatus.unedited,
+        copy: state.original ?? MatchDay(name: ''));
   }
 
   Stream<EditMatchDayState> _editName(EditName event) async* {
-    _editedMatchDay = _editedMatchDay.copyWith(
-      name: event.name,
-    );
-    if (_matchDay != _editedMatchDay) {
-      yield EditMatchDayState.edited(_matchDay, _editedMatchDay);
+    yield state.copyWith(copy: state.copy.copyWith(name: event.name));
+    if (state.original != state.copy) {
+      yield state.copyWith(status: EditStatus.edited);
     } else {
-      yield EditMatchDayState.unedited(_matchDay);
+      yield state.copyWith(status: EditStatus.unedited);
     }
   }
 
   Stream<EditMatchDayState> _updateMatchDay() async* {
-    yield EditMatchDayState.submitting();
-    await _matchDayRepository.update(_editedMatchDay);
-    yield EditMatchDayState.submitted();
+    yield state.copyWith(status: EditStatus.submitting);
+    if (state.original == null) {
+      await _matchDayRepository.createMatchDay(state.copy);
+    } else {
+      await _matchDayRepository.updateMatchDay(state.copy);
+    }
+    yield state.copyWith(status: EditStatus.complete);
   }
 }

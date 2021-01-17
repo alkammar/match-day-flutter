@@ -1,8 +1,6 @@
-
 import 'package:equatable/equatable.dart';
 
-class User extends Equatable {
-
+class Owner extends Equatable {
   String name;
 
   @override

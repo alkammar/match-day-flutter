@@ -2,20 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:match_day/bloc/create_match_day/bloc.dart';
 import 'package:match_day/bloc/edit_match_day/bloc.dart';
 import 'package:match_day/bloc/invite_players/bloc.dart';
 import 'package:match_day/model/match_day.dart';
+import 'package:match_day/repo/invitation_repository.dart';
+import 'package:match_day/repo/matchday_repository.dart';
 import 'package:match_day/ui/main_button.dart';
 import 'package:match_day/ui/md_text_field.dart';
 
 class CreateMatchDayScreen extends StatefulWidget {
-  final MatchDay matchDay;
+  // final MatchDay matchDay;
 
   @override
   _CreateMatchDayScreenState createState() => _CreateMatchDayScreenState();
 
-  CreateMatchDayScreen({this.matchDay});
+  // CreateMatchDayScreen({this.matchDay});
+
+  static Route route({@required MatchDay matchDay}) {
+    print('edit match day $matchDay');
+    return MaterialPageRoute(builder: (context) {
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider<InvitePlayersBloc>(
+              create: (context) => InvitePlayersBloc(
+                    invitationRepository:
+                        RepositoryProvider.of<InvitationRepository>(context),
+                  )),
+          BlocProvider<EditMatchDayBloc>(
+              create: (context) => EditMatchDayBloc(
+                    matchDay: matchDay,
+                    matchDayRepository:
+                        RepositoryProvider.of<MatchDayRepository>(context),
+                  )),
+        ],
+        child: CreateMatchDayScreen(),
+      );
+    });
+  }
 }
 
 class _CreateMatchDayScreenState extends State<CreateMatchDayScreen> {
@@ -23,20 +46,20 @@ class _CreateMatchDayScreenState extends State<CreateMatchDayScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    if (widget.matchDay == null) {
-      BlocProvider.of<CreateMatchDayBloc>(context).add(CreateMatchDay());
-    } else {
-      BlocProvider.of<EditMatchDayBloc>(context)
-          .add(LoadMatchDay(widget.matchDay));
-    }
+    BlocProvider.of<EditMatchDayBloc>(context).add(LoadMatchDay());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-            widget.matchDay == null ? 'Create Match Day' : 'Edit Match Day'),
+        title: BlocBuilder<EditMatchDayBloc, EditMatchDayState>(
+          builder: (BuildContext context, state) {
+            return Text(state.original?.id == null
+                ? 'Create Match Day'
+                : 'Edit Match Day');
+          },
+        ),
       ),
       body: SafeArea(
         child: BlocListener<EditMatchDayBloc, EditMatchDayState>(
@@ -69,7 +92,7 @@ class _CreateMatchDayScreenState extends State<CreateMatchDayScreen> {
                       builder: (context, state) {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text('${state.original?.admin?.name}'),
+                      child: Text('${state.original?.owner?.name}'),
                     );
                   }),
                   BlocBuilder<EditMatchDayBloc, EditMatchDayState>(
@@ -117,7 +140,7 @@ class _CreateMatchDayScreenState extends State<CreateMatchDayScreen> {
                                 .add(SubmitEdits())
                             : null,
                         loading: state.status == EditStatus.submitting,
-                        label: 'Submit',
+                        label: state.original?.id == null ? 'Create' : 'Submit',
                       ),
                     ),
                   );

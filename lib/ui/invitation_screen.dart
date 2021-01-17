@@ -3,11 +3,28 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:match_day/bloc/fetch_match_days/bloc.dart';
 import 'package:match_day/bloc/pending_invitation/bloc.dart';
+import 'package:match_day/repo/invitation_repository.dart';
 import 'package:match_day/ui/main_button.dart';
 
 class InvitationScreen extends StatefulWidget {
   @override
   _InvitationScreenState createState() => _InvitationScreenState();
+
+  static Route route({@required Uri uri}) {
+    return MaterialPageRoute(builder: (context) {
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider<PendingInvitationBloc>(
+              create: (context) => PendingInvitationBloc(
+                    uri: uri,
+                    invitationRepository:
+                        RepositoryProvider.of<InvitationRepository>(context),
+                  )),
+        ],
+        child: InvitationScreen(),
+      );
+    });
+  }
 }
 
 class _InvitationScreenState extends State<InvitationScreen> {

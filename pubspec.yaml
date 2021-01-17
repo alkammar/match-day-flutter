@@ -35,9 +35,10 @@ dependencies:
   flutter_libphonenumber: ^0.3.11
   firebase_core: ^0.5.3
   firebase_dynamic_links: ^0.6.3
-  share: ^0.6.4+3
+  firebase_auth: ^0.18.0+1
   google_sign_in: ^4.5.1
   cloud_firestore:
+  share: ^0.6.4+3
 
 dev_dependencies:
   test: ^1.15.7

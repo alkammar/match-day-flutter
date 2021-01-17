@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:match_day/model/invitation.dart';
 import 'package:match_day/model/match_day.dart';
 import 'package:match_day/repo/invitation_repository.dart';
 import 'package:match_day/repo/matchday_repository.dart';
@@ -23,13 +24,13 @@ class FetchMatchDaysBloc extends Bloc<MatchDaysEvent, MatchDaysState> {
         _matchDaysRepository = matchDayRepository,
         _invitationRepository = invitationRepository,
         super(const MatchDaysState()) {
-    _matchDaysStream = _matchDaysRepository.stream.listen((event) => add(
-          MatchDaysUpdated(event),
-        ));
-    _invitationsStream =
-        _invitationRepository.listenToUpdates((MatchDay matchDay) {
-      return {add(MatchDaysRequested())};
-    });
+    // _invitationsStream =
+    //     _invitationRepository.listenToUpdates((MatchDay matchDay) {
+    //   return () {
+    //     print('updates from listening');
+    //     add(MatchDaysRequested());
+    //   };
+    // });
   }
 
   @override
@@ -51,10 +52,20 @@ class FetchMatchDaysBloc extends Bloc<MatchDaysEvent, MatchDaysState> {
         matchDays: matchDays,
       );
 
-      print('match day stream $_matchDaysStream');
-      List<MatchDay> invitations = await _invitationRepository.fetchMatchDays();
+      _matchDaysStream?.cancel();
+      _matchDaysStream = _matchDaysRepository.stream.listen((event) {
+        add(MatchDaysUpdated(event));
+      }, onError: (error) {
+        print(' error from fetch match here $error');
+      });
+
+      print('no error from fetch match');
+
+      List<Invitation> invitations =
+          await _invitationRepository.fetchInvitations();
       // yield MatchDaysState.fetched(matchDays + invitations);
     } catch (e) {
+      print('error from fetch match');
       yield state.copyWith(
         status: MatchDaysStatus.error,
         error: 'Something wrong happened $e',
@@ -64,8 +75,8 @@ class FetchMatchDaysBloc extends Bloc<MatchDaysEvent, MatchDaysState> {
 
   @override
   Future<void> close() {
-    _matchDaysStream.cancel();
-    _invitationsStream.cancel();
+    // _invitationsStream.cancel();
+    _matchDaysStream?.cancel();
     return super.close();
   }
 }

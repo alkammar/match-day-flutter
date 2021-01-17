@@ -11,9 +11,9 @@ class MatchDayAdminState extends Equatable {
 
   const MatchDayAdminState.fetching() : this._(fetching: true);
 
-  const MatchDayAdminState.fetched(User admin) : this._(admin: admin);
+  const MatchDayAdminState.fetched(Owner admin) : this._(admin: admin);
 
-  final User admin;
+  final Owner admin;
   final String error;
   final bool fetching;
 

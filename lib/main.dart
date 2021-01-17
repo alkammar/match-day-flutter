@@ -4,13 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:match_day/bloc/create_match_day/bloc.dart';
+import 'package:match_day/bloc/authentication/bloc.dart';
 import 'package:match_day/bloc/dynamic_link/bloc.dart';
-import 'package:match_day/bloc/edit_match_day/bloc.dart';
-import 'package:match_day/bloc/edit_profile/bloc.dart';
-import 'package:match_day/bloc/fetch_match_days/bloc.dart';
-import 'package:match_day/bloc/invite_players/bloc.dart';
-import 'package:match_day/bloc/pending_invitation/bloc.dart';
+import 'package:match_day/repo/authentication_repository.dart';
 import 'package:match_day/repo/invitation_repository.dart';
 import 'package:match_day/repo/matchday_repository.dart';
 import 'package:match_day/repo/profile_repository.dart';
@@ -18,6 +14,8 @@ import 'package:match_day/ui/create_match_day_screen.dart';
 import 'package:match_day/ui/edit_profile_screen.dart';
 import 'package:match_day/ui/home_screen.dart';
 import 'package:match_day/ui/invitation_screen.dart';
+import 'package:match_day/ui/login_screen.dart';
+import 'package:match_day/ui/splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,36 +28,17 @@ class MatchDayApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiRepositoryProvider(
-      providers: [
-        RepositoryProvider<ProfileRepository>(
-            create: (context) => ProfileRepository()),
-        RepositoryProvider<MatchDayRepository>(
-            create: (context) => MatchDayRepository()),
-        RepositoryProvider<InvitationRepository>(
-            create: (context) => InvitationRepository()),
-      ],
-      child: MultiBlocProvider(
-        providers: [
-          BlocProvider<DynamicLinkBloc>(create: (context) {
-            return DynamicLinkBloc();
-          }),
-        ],
-        child: FutureBuilder(
-          future: _initialization,
-          builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-            if (snapshot.hasError) {
-              return Text(snapshot.error.toString());
-            } else if (snapshot.hasData) {
-              return MatchDayView();
-            } else {
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-          },
-        ),
-      ),
+    return FutureBuilder(
+      future: _initialization,
+      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+        if (snapshot.hasError) {
+          return Text(snapshot.error.toString());
+        } else if (snapshot.hasData) {
+          return MatchDayView();
+        } else {
+          return MaterialApp(home: SplashScreen());
+        }
+      },
     );
   }
 }
@@ -76,136 +55,94 @@ class _MatchDayViewState extends State<MatchDayView> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      localizationsDelegates: [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<AuthenticationRepository>(
+            create: (context) => AuthenticationRepository()),
+        RepositoryProvider<ProfileRepository>(
+            create: (context) => ProfileRepository()),
+        RepositoryProvider<MatchDayRepository>(
+            create: (context) => MatchDayRepository()),
+        RepositoryProvider<InvitationRepository>(
+            create: (context) => InvitationRepository()),
       ],
-      supportedLocales: [
-        const Locale('en', ''),
-        const Locale('ar', ''),
-      ],
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        buttonColor: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      navigatorKey: _navigatorKey,
-      home: MultiBlocProvider(
+      child: MultiBlocProvider(
         providers: [
-          BlocProvider<FetchMatchDaysBloc>(create: (context) {
-            return FetchMatchDaysBloc(
-              matchDayRepository:
-                  RepositoryProvider.of<MatchDayRepository>(context),
-              invitationRepository:
-                  RepositoryProvider.of<InvitationRepository>(context),
+          BlocProvider<AuthenticationBloc>(create: (context) {
+            return AuthenticationBloc(
+              authenticationRepository:
+                  RepositoryProvider.of<AuthenticationRepository>(context),
             );
+            // );
+          }),
+          BlocProvider<DynamicLinkBloc>(create: (context) {
+            return DynamicLinkBloc();
           }),
         ],
-        child: HomeScreen(),
-      ),
-      builder: (context, child) {
-        return MultiBlocListener(
-          listeners: [
-            BlocListener<DynamicLinkBloc, DynamicLinkState>(
-              listener: (context, state) {
-                print('deeplink ${state.link}');
-                _navigator.pushNamed(
-                  state.link.path,
-                  arguments: state.link,
-                );
-              },
-            ),
+        child: MaterialApp(
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
           ],
-          child: child,
-        );
-      },
-      onGenerateRoute: (settings) {
-        if (settings.name == '/create') {
-          return MaterialPageRoute(builder: (context) {
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider<InvitePlayersBloc>(
-                    create: (context) => InvitePlayersBloc(
-                          invitationRepository:
-                              RepositoryProvider.of<InvitationRepository>(
-                                  context),
-                        )),
-                BlocProvider<EditMatchDayBloc>(
-                    create: (context) => EditMatchDayBloc(
-                          matchDay: settings.arguments,
-                          matchDayRepository:
-                              RepositoryProvider.of<MatchDayRepository>(
-                                  context),
-                        )),
-                BlocProvider<CreateMatchDayBloc>(
-                    create: (context) => CreateMatchDayBloc(
-                          matchDayRepository:
-                              RepositoryProvider.of<MatchDayRepository>(
-                                  context),
-                          editMatchDayBloc:
-                              BlocProvider.of<EditMatchDayBloc>(context),
-                        )),
+          supportedLocales: [
+            const Locale('en', ''),
+            const Locale('ar', ''),
+          ],
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            buttonColor: Colors.blue,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          navigatorKey: _navigatorKey,
+          home: SplashScreen(),
+          builder: (context, child) {
+            return MultiBlocListener(
+              listeners: [
+                BlocListener<DynamicLinkBloc, DynamicLinkState>(
+                  listener: (context, state) {
+                    print('deeplink ${state.link}');
+                    _navigator.pushNamed(
+                      state.link.path,
+                      arguments: state.link,
+                    );
+                  },
+                ),
+                BlocListener<AuthenticationBloc, AuthenticationState>(
+                  listener: (context, state) {
+                    if (state.status == AuthenticationStatus.signedOut) {
+                      _navigator.pushNamed('/login');
+                    } else if (state.status == AuthenticationStatus.signedIn) {
+                      _navigator.pushNamedAndRemoveUntil(
+                          '/home', (route) => false);
+                    }
+                  },
+                ),
               ],
-              child: CreateMatchDayScreen(),
+              child: child,
             );
-          });
-        } else if (settings.name == '/details') {
-          return MaterialPageRoute(builder: (context) {
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider<InvitePlayersBloc>(
-                    create: (context) => InvitePlayersBloc(
-                          invitationRepository:
-                              RepositoryProvider.of<InvitationRepository>(
-                                  context),
-                        )),
-                BlocProvider<EditMatchDayBloc>(
-                    create: (context) => EditMatchDayBloc(
-                          matchDay: settings.arguments,
-                          matchDayRepository:
-                              RepositoryProvider.of<MatchDayRepository>(
-                                  context),
-                        )),
-              ],
-              child: CreateMatchDayScreen(matchDay: settings.arguments),
-            );
-          });
-        } else if (settings.name == '/invite') {
-          return MaterialPageRoute(builder: (context) {
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider<PendingInvitationBloc>(
-                    create: (context) => PendingInvitationBloc(
-                          uri: settings.arguments,
-                          invitationRepository:
-                              RepositoryProvider.of<InvitationRepository>(
-                                  context),
-                        )),
-              ],
-              child: InvitationScreen(),
-            );
-          });
-        } else if (settings.name == '/edit-profile') {
-          return MaterialPageRoute(builder: (context) {
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider<EditProfileBloc>(
-                    create: (context) => EditProfileBloc(
-                          profileRepository:
-                              RepositoryProvider.of<ProfileRepository>(context),
-                        )),
-              ],
-              child: EditProfileScreen(),
-            );
-          });
-        } else {
-          return MaterialPageRoute(builder: (context) => null);
-        }
-      },
+          },
+          onGenerateRoute: (settings) {
+            if (settings.name == '/login') {
+              return LoginScreen.route();
+            } else if (settings.name == '/home') {
+              return HomeScreen.route();
+            } else if (settings.name == '/create') {
+              return CreateMatchDayScreen.route(matchDay: settings.arguments);
+            } else if (settings.name == '/details') {
+              return CreateMatchDayScreen.route(matchDay: settings.arguments);
+            } else if (settings.name == '/invite') {
+              return InvitationScreen.route(uri: settings.arguments);
+            } else if (settings.name == '/edit-profile') {
+              return EditProfileScreen.route();
+            } else {
+              return MaterialPageRoute(builder: (context) => null);
+            }
+          },
+        ),
+      ),
     );
   }
 }

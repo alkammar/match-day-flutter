@@ -3,12 +3,28 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:match_day/bloc/edit_profile/bloc.dart';
+import 'package:match_day/repo/profile_repository.dart';
 import 'package:match_day/ui/main_button.dart';
 import 'package:match_day/ui/md_text_field.dart';
 
 class EditProfileScreen extends StatefulWidget {
   @override
   _EditProfileScreenState createState() => _EditProfileScreenState();
+
+  static Route route() {
+    return MaterialPageRoute(builder: (context) {
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider<EditProfileBloc>(
+              create: (context) => EditProfileBloc(
+                    profileRepository:
+                        RepositoryProvider.of<ProfileRepository>(context),
+                  )),
+        ],
+        child: EditProfileScreen(),
+      );
+    });
+  }
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
@@ -18,7 +34,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       appBar: AppBar(
         title: BlocBuilder<EditProfileBloc, EditProfileState>(
           builder: (BuildContext context, state) {
-            return Text(state.original == null ? 'Create Profile' : 'Edit Profile');
+            return Text(
+                state.original == null ? 'Create Profile' : 'Edit Profile');
           },
         ),
       ),
@@ -34,7 +51,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   BlocBuilder<EditProfileBloc, EditProfileState>(
-                      buildWhen: (previous, current) => previous.status == EditStatus.uninitialized,
+                      buildWhen: (previous, current) =>
+                          previous.status == EditStatus.uninitialized,
                       builder: (context, state) {
                         return Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -42,7 +60,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             label: AppLocalizations.of(context).matchDayName,
                             text: '${state.original?.name}',
                             onChanged: (text) {
-                              BlocProvider.of<EditProfileBloc>(context).add(EditName(text));
+                              BlocProvider.of<EditProfileBloc>(context)
+                                  .add(EditName(text));
                             },
                           ),
                         );
@@ -58,7 +77,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       width: double.infinity,
                       child: MainButton(
                         onPressed: state.status == EditStatus.edited
-                            ? () => BlocProvider.of<EditProfileBloc>(context).add(SubmitEdits())
+                            ? () => BlocProvider.of<EditProfileBloc>(context)
+                                .add(SubmitEdits())
                             : null,
                         loading: state.status == EditStatus.submitting,
                         label: state.original == null ? 'Create' : 'Edit',

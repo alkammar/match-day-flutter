@@ -43,7 +43,6 @@ class PendingInvitationBloc
       status: PendingInvitationStatus.initialized,
       invitation: event.invitation,
     );
-    // final GoogleSignInAccount googleUser = await GoogleSignIn().signIn();
   }
 
   Stream<PendingInvitationState> _askToJoin(AskToJoinMatchDay event) async* {
