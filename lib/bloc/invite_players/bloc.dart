@@ -7,7 +7,6 @@ import 'package:match_day/repo/invitation_repository.dart';
 import 'package:share/share.dart';
 
 part 'event.dart';
-
 part 'state.dart';
 
 class InvitePlayersBloc extends Bloc<InvitePlayersEvent, InvitePlayersState> {
@@ -56,8 +55,9 @@ class InvitePlayersBloc extends Bloc<InvitePlayersEvent, InvitePlayersState> {
         campaignToken: 'example-promo',
       ),
       socialMetaTagParameters: SocialMetaTagParameters(
-        title: 'Example of a Dynamic Link',
-        description: 'This link works whether app is installed or not!',
+        title: 'Invitation to Match Day',
+        description:
+            'This is an invitation to ${event.matchDay.name} Match Day!',
       ),
     );
 

@@ -10,16 +10,11 @@ import 'package:match_day/repo/matchday_repository.dart';
 import 'package:match_day/ui/main_button.dart';
 import 'package:match_day/ui/md_text_field.dart';
 
-class CreateMatchDayScreen extends StatefulWidget {
-  // final MatchDay matchDay;
-
+class EditMatchDayScreen extends StatefulWidget {
   @override
-  _CreateMatchDayScreenState createState() => _CreateMatchDayScreenState();
-
-  // CreateMatchDayScreen({this.matchDay});
+  _EditMatchDayScreenState createState() => _EditMatchDayScreenState();
 
   static Route route({@required MatchDay matchDay}) {
-    print('edit match day $matchDay');
     return MaterialPageRoute(builder: (context) {
       return MultiBlocProvider(
         providers: [
@@ -35,20 +30,13 @@ class CreateMatchDayScreen extends StatefulWidget {
                         RepositoryProvider.of<MatchDayRepository>(context),
                   )),
         ],
-        child: CreateMatchDayScreen(),
+        child: EditMatchDayScreen(),
       );
     });
   }
 }
 
-class _CreateMatchDayScreenState extends State<CreateMatchDayScreen> {
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    BlocProvider.of<EditMatchDayBloc>(context).add(LoadMatchDay());
-  }
-
+class _EditMatchDayScreenState extends State<EditMatchDayScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,6 +110,55 @@ class _CreateMatchDayScreenState extends State<CreateMatchDayScreen> {
                                   .add(SendInvitation(state.original)),
                           label: 'Add Player',
                         ),
+                      );
+                    },
+                  ),
+                  BlocBuilder<EditMatchDayBloc, EditMatchDayState>(
+                    builder: (BuildContext context, state) {
+                      return Column(
+                        children: [
+                          for (var player in state.copy?.players ?? [])
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(player.name),
+                            )
+                        ],
+                      );
+                    },
+                  ),
+                  Container(
+                    color: Colors.blue,
+                    child: SizedBox(
+                      child: Text(
+                        'Join Requests',
+                      ),
+                      width: double.infinity,
+                    ),
+                  ),
+                  BlocBuilder<EditMatchDayBloc, EditMatchDayState>(
+                    builder: (BuildContext context, state) {
+                      return Column(
+                        children: [
+                          for (var request in state.copy?.joinRequests ?? [])
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(request.profile.name),
+                                  ElevatedButton(
+                                      onPressed: () {
+                                        RepositoryProvider.of<
+                                                MatchDayRepository>(context)
+                                            .acceptJoinRequest(
+                                                state.copy, request);
+                                      },
+                                      child: Text('Accept'))
+                                ],
+                              ),
+                            )
+                        ],
                       );
                     },
                   ),

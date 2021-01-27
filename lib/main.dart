@@ -10,11 +10,12 @@ import 'package:match_day/repo/authentication_repository.dart';
 import 'package:match_day/repo/invitation_repository.dart';
 import 'package:match_day/repo/matchday_repository.dart';
 import 'package:match_day/repo/profile_repository.dart';
-import 'package:match_day/ui/create_match_day_screen.dart';
+import 'package:match_day/ui/edit_match_day_screen.dart';
 import 'package:match_day/ui/edit_profile_screen.dart';
 import 'package:match_day/ui/home_screen.dart';
 import 'package:match_day/ui/invitation_screen.dart';
 import 'package:match_day/ui/login_screen.dart';
+import 'package:match_day/ui/match_day_details.dart';
 import 'package:match_day/ui/splash_screen.dart';
 
 void main() {
@@ -130,9 +131,11 @@ class _MatchDayViewState extends State<MatchDayView> {
             } else if (settings.name == '/home') {
               return HomeScreen.route();
             } else if (settings.name == '/create') {
-              return CreateMatchDayScreen.route(matchDay: settings.arguments);
+              return EditMatchDayScreen.route(matchDay: settings.arguments);
             } else if (settings.name == '/details') {
-              return CreateMatchDayScreen.route(matchDay: settings.arguments);
+              return MatchDayDetailsScreen.route(matchDay: settings.arguments);
+            } else if (settings.name == '/edit-match-day') {
+              return EditMatchDayScreen.route(matchDay: settings.arguments);
             } else if (settings.name == '/invite') {
               return InvitationScreen.route(uri: settings.arguments);
             } else if (settings.name == '/edit-profile') {

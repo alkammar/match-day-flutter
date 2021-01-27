@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:match_day/model/invitation.dart';
 import 'package:match_day/model/match_day.dart';
 import 'package:match_day/repo/invitation_repository.dart';
 import 'package:match_day/repo/matchday_repository.dart';
@@ -23,15 +23,7 @@ class FetchMatchDaysBloc extends Bloc<MatchDaysEvent, MatchDaysState> {
   })  : assert(matchDayRepository != null),
         _matchDaysRepository = matchDayRepository,
         _invitationRepository = invitationRepository,
-        super(const MatchDaysState()) {
-    // _invitationsStream =
-    //     _invitationRepository.listenToUpdates((MatchDay matchDay) {
-    //   return () {
-    //     print('updates from listening');
-    //     add(MatchDaysRequested());
-    //   };
-    // });
-  }
+        super(const MatchDaysState());
 
   @override
   Stream<MatchDaysState> mapEventToState(MatchDaysEvent event) async* {
@@ -52,17 +44,7 @@ class FetchMatchDaysBloc extends Bloc<MatchDaysEvent, MatchDaysState> {
         matchDays: matchDays,
       );
 
-      _matchDaysStream?.cancel();
-      _matchDaysStream = _matchDaysRepository.stream.listen((event) {
-        add(MatchDaysUpdated(event));
-      }, onError: (error) {
-        print(' error from fetch match here $error');
-      });
-
-      print('no error from fetch match');
-
-      List<Invitation> invitations =
-          await _invitationRepository.fetchInvitations();
+      listenToUpdates();
       // yield MatchDaysState.fetched(matchDays + invitations);
     } catch (e) {
       print('error from fetch match');
@@ -71,6 +53,31 @@ class FetchMatchDaysBloc extends Bloc<MatchDaysEvent, MatchDaysState> {
         error: 'Something wrong happened $e',
       );
     }
+  }
+
+  listenToUpdates() async {
+    _matchDaysStream?.cancel();
+    _matchDaysStream = _matchDaysRepository.stream.listen((matchDays) {
+      add(MatchDaysUpdated(matchDays));
+
+      List<MatchDay> list = List<MatchDay>.from(matchDays);
+      matchDays.forEach((element) async {
+        if (element.owner.id == FirebaseAuth.instance.currentUser.uid) {
+          var requests = await _matchDaysRepository.fetchJoinRequests(element);
+          list[list.indexOf(element)] =
+              element.copyWith(joinRequests: requests);
+          add(MatchDaysUpdated(list));
+        }
+      });
+    }, onError: (error) {
+      print(' error from fetch match here $error');
+    });
+
+    print('no error from fetch match');
+
+    // List<Invitation> invitations =
+    //     await _invitationRepository.fetchInvitations();
+    // // yield MatchDaysState.fetched(matchDays + invitations);
   }
 
   @override

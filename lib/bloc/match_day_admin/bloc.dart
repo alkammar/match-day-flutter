@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:match_day/model/owner.dart';
+import 'package:match_day/model/player.dart';
 
 part 'event.dart';
 part 'state.dart';

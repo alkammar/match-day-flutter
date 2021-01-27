@@ -13,7 +13,13 @@ class MatchDayItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!matchDay.invitation) {
       return GestureDetector(
-        child: Text('${matchDay?.name}'),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('${matchDay?.name}'),
+            Text('${matchDay?.joinRequests?.length ?? ''}'),
+          ],
+        ),
         onTap: () {
           Navigator.pushNamed(
             context,

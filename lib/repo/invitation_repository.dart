@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:match_day/model/invitation.dart';
 import 'package:match_day/model/match_day.dart';
 
@@ -20,11 +21,11 @@ class InvitationRepository {
 
   Future<String> createInvitation(MatchDay matchDay) {
     return FirebaseFirestore.instance
-        .collection('match_day')
+        .collection('match_days')
         .doc(matchDay.id)
         .collection('invitations')
         .add({
-      'created': FieldValue.serverTimestamp(),
+      'expiresIn': 30,
     }).then((doc) {
       return doc.id;
     });
@@ -32,26 +33,20 @@ class InvitationRepository {
 
   Future<Invitation> addJoinRequest(Invitation invitation) {
     return FirebaseFirestore.instance
-        .collection('match_day')
+        .collection('match_days')
         .doc(invitation.matchDay.id)
         .collection('invitations')
         .doc(invitation.id)
         .collection('join_requests')
-        // .doc(_id)
         .add({
-      // TODO add user id
+      'mdid': invitation.matchDay.id,
+      'iid': invitation.id,
+      'pid': FirebaseAuth.instance.currentUser.uid,
+      'name': FirebaseAuth.instance.currentUser.displayName
     }).then((value) {
       return value.get().then((snapshot) {
         return invitation;
       });
     });
   }
-
-  // StreamController<MatchDay> controller = StreamController<MatchDay>();
-  //
-  // StreamSubscription<MatchDay> listenToUpdates(Function f) {
-  //   return controller.stream.listen((value) {
-  //     f.call(value);
-  //   });
-  // }
 }
